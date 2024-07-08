@@ -9,6 +9,7 @@ import { loadConfigurationFile } from "../util/configuration";
 import MainConfiguration from "../configuration/MainConfiguration";
 import RabbitMqBoticaClient from "../client/RabbitMqBoticaClient";
 import fs from "fs";
+import { schedule } from "../util";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 
@@ -179,22 +180,45 @@ export class Bot {
     if (!this.proactiveAction) {
       throw new Error("undefined action for proactive bot");
     }
-
     const lifecycleConfiguration =
       this.getLifecycleConfiguration() as ProactiveBotLifecycleConfiguration;
-    const interval = setInterval(() => {
-      if (!this.isRunning()) {
-        clearInterval(interval);
-        return;
-      }
-      try {
-        this.proactiveAction!();
-      } catch (error) {
-        logger.error(
-          `an exception was risen during the bot action: ${formatError(error)}`,
-        );
-      }
-    }, lifecycleConfiguration.period * 1000);
+
+    if (lifecycleConfiguration.period > 0) {
+      this.scheduleRepeatingTask(lifecycleConfiguration);
+    } else {
+      setTimeout(async () => {
+        if (this.isRunning()) {
+          this.runProactiveAction();
+          await this.stop();
+        }
+      }, lifecycleConfiguration.initialDelay * 1000);
+    }
+  }
+
+  private scheduleRepeatingTask(
+    lifecycleConfiguration: ProactiveBotLifecycleConfiguration,
+  ) {
+    const intervalId = schedule(
+      () => {
+        if (!this.isRunning()) {
+          clearInterval(intervalId);
+          return;
+        }
+        this.runProactiveAction();
+      },
+      lifecycleConfiguration.initialDelay * 1000,
+      lifecycleConfiguration.period * 1000,
+    );
+  }
+
+  private runProactiveAction() {
+    try {
+      this.proactiveAction!();
+    } catch (error) {
+      logger.error(
+        `an exception was risen during the bot action: ${formatError(error)}`,
+      );
+    }
   }
 
   /**
@@ -211,8 +235,10 @@ export class Bot {
     if (!this.running) {
       throw new Error("Bot is not running");
     }
+    logger.info("Closing connection with the message broker...");
     await this.boticaClient.close();
     this.running = false;
+    logger.info("Bot stopped.");
   }
 
   private getLifecycleConfiguration(): BotLifecycleConfiguration {
