@@ -1,0 +1,27 @@
+{
+  "name": "botica-lib-node",
+  "version": "1.0.0",
+  "description": "Node library for botica",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isa-group/botica-lib-node.git"
+  },
+  "author": "Alberto Mimbrero",
+  "license": "MIT",
+  "dependencies": {
+    "prettier": "^3.3.2",
+    "amqplib": "^0.10.4",
+    "winston": "^3.13.0",
+    "yaml": "^2.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.2",
+    "@types/node": "^20.14.9",
+    "@types/amqplib": "^0.10.5"
+  }
+}
