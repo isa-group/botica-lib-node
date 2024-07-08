@@ -7,7 +7,6 @@ export default interface BotTypeConfiguration {
   image: string;
   mount?: Array<BotMountConfiguration>;
   lifecycle: BotLifecycleConfiguration;
-  publish: { key: string; order: string };
-  subscribe?: Array<string>;
+  publish?: { key?: string; order?: string };
   instances: { [id: string]: BotInstanceConfiguration };
 }

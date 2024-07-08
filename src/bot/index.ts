@@ -58,6 +58,9 @@ export class Bot {
     if (this.getLifecycleConfiguration().type !== "proactive") {
       throw new Error("bot lifecycle type is not proactive");
     }
+    if (this.running) {
+      throw new Error("bot is already running");
+    }
     this.proactiveAction = action;
   }
 
@@ -143,8 +146,13 @@ export class Bot {
   ): Promise<void> {
     if (!key || !order) {
       const publishConfiguration = this.botTypeConfiguration.publish;
-      key = key || publishConfiguration.key;
-      order = order || publishConfiguration.order;
+      if (!isPublishDefined(publishConfiguration)) {
+        throw new Error(
+          "cannot publish order: no publish section present in the bot type configuration.",
+        );
+      }
+      key = publishConfiguration!.key!;
+      order = publishConfiguration!.order!;
     }
     if (typeof message !== "string") message = JSON.stringify(message);
     await this.boticaClient.publishOrder(key, order, message);
@@ -175,12 +183,12 @@ export class Bot {
     const lifecycleConfiguration =
       this.getLifecycleConfiguration() as ProactiveBotLifecycleConfiguration;
     const interval = setInterval(() => {
-      if (!this.isRunning() || !this.proactiveAction) {
+      if (!this.isRunning()) {
         clearInterval(interval);
         return;
       }
       try {
-        this.proactiveAction();
+        this.proactiveAction!();
       } catch (error) {
         logger.error(
           `an exception was risen during the bot action: ${formatError(error)}`,
@@ -253,4 +261,16 @@ function buildClient(
     );
   }
   throw new Error("Unsupported broker type");
+}
+
+function isPublishDefined(
+  publishConfiguration: { key?: string; order?: string } | undefined,
+) {
+  return (
+    publishConfiguration &&
+    publishConfiguration.key &&
+    publishConfiguration.key.trim() !== "" &&
+    publishConfiguration.order &&
+    publishConfiguration.order.trim() !== ""
+  );
 }
