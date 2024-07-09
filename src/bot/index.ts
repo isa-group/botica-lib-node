@@ -254,7 +254,9 @@ export async function botica(): Promise<Bot> {
   const botId = process.env.BOTICA_BOT_ID;
 
   const typeConfiguration = configuration.bots[botType!];
+  typeConfiguration.id = botType!;
   const botConfiguration = typeConfiguration.instances[botId!];
+  botConfiguration.id = botId!;
   const boticaClient = buildClient(
     configuration,
     typeConfiguration,
