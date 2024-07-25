@@ -1,4 +1,4 @@
-import Packet from "../protocol/Packet";
+import Packet from "../protocol/Packet.js";
 
 export default interface BoticaClient {
   connect(): Promise<void>;

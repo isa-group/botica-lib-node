@@ -1,15 +1,15 @@
-import BotInstanceConfiguration from "../configuration/bot/BotInstanceConfiguration";
-import BotTypeConfiguration from "../configuration/bot/BotTypeConfiguration";
-import BoticaClient, { OrderListener } from "../client/BoticaClient";
-import BotLifecycleConfiguration from "../configuration/bot/lifecycle/BotLifecycleConfiguration";
-import ReactiveBotLifecycleConfiguration from "../configuration/bot/lifecycle/ReactiveBotLifecycleConfiguration";
-import logger, { formatError } from "../logger";
-import ProactiveBotLifecycleConfiguration from "../configuration/bot/lifecycle/ProactiveBotLifecycleConfiguration";
-import { loadConfigurationFile } from "../util/configuration";
-import MainConfiguration from "../configuration/MainConfiguration";
-import RabbitMqBoticaClient from "../client/RabbitMqBoticaClient";
+import BotInstanceConfiguration from "../configuration/bot/BotInstanceConfiguration.js";
+import BotTypeConfiguration from "../configuration/bot/BotTypeConfiguration.js";
+import BoticaClient, { OrderListener } from "../client/BoticaClient.js";
+import BotLifecycleConfiguration from "../configuration/bot/lifecycle/BotLifecycleConfiguration.js";
+import ReactiveBotLifecycleConfiguration from "../configuration/bot/lifecycle/ReactiveBotLifecycleConfiguration.js";
+import logger, { formatError } from "../logger.js";
+import ProactiveBotLifecycleConfiguration from "../configuration/bot/lifecycle/ProactiveBotLifecycleConfiguration.js";
+import { loadConfigurationFile } from "../util/configuration/index.js";
+import MainConfiguration from "../configuration/MainConfiguration.js";
+import RabbitMqBoticaClient from "../client/RabbitMqBoticaClient.js";
 import fs from "fs";
-import { schedule } from "../util";
+import { schedule } from "../util/index.js";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 

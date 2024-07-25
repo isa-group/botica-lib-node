@@ -1,5 +1,5 @@
 import client, { Channel, Connection } from "amqplib";
-import logger from "../logger";
+import logger from "../logger.js";
 
 const RETRY_SECONDS = 5;
 const MAX_ATTEMPTS = 7;

@@ -1,13 +1,13 @@
-import BoticaClient, { OrderListener, PacketListener } from "./BoticaClient";
-import Packet from "../protocol/Packet";
-import * as rabbitmq from "../rabbitmq";
-import { RabbitMqClient } from "../rabbitmq";
+import BoticaClient, { OrderListener, PacketListener } from "./BoticaClient.js";
+import Packet from "../protocol/Packet.js";
+import * as rabbitmq from "../rabbitmq/index.js";
+import { RabbitMqClient } from "../rabbitmq/index.js";
 import { format } from "node:util";
-import BotTypeConfiguration from "../configuration/bot/BotTypeConfiguration";
-import BotInstanceConfiguration from "../configuration/bot/BotInstanceConfiguration";
-import logger, { formatError } from "../logger";
-import MainConfiguration from "../configuration/MainConfiguration";
-import RabbitMqConfiguration from "../configuration/broker/RabbitMqConfiguration";
+import BotTypeConfiguration from "../configuration/bot/BotTypeConfiguration.js";
+import BotInstanceConfiguration from "../configuration/bot/BotInstanceConfiguration.js";
+import logger, { formatError } from "../logger.js";
+import MainConfiguration from "../configuration/MainConfiguration.js";
+import RabbitMqConfiguration from "../configuration/broker/RabbitMqConfiguration.js";
 
 const ORDER_EXCHANGE = "botica.order";
 const PROTOCOL_EXCHANGE = "botica.protocol";

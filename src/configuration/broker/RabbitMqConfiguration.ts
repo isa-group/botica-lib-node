@@ -1,4 +1,4 @@
-import BrokerConfiguration from "./BrokerConfiguration";
+import BrokerConfiguration from "./BrokerConfiguration.js";
 
 export default interface RabbitMqConfiguration extends BrokerConfiguration {
   type: "rabbitmq";
