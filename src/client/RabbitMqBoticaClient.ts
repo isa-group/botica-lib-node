@@ -12,7 +12,10 @@ import RabbitMqConfiguration from "../configuration/broker/RabbitMqConfiguration
 const ORDER_EXCHANGE = "botica.order";
 const PROTOCOL_EXCHANGE = "botica.protocol";
 
-const BOT_TYPE_ORDERS_FORMAT = "bot_type.%s.orders";
+const BOT_TYPE_ORDERS_FORMATS = {
+  distributed: "bot_type.%s.orders.distributed",
+  broadcast: "bot_type.%s.orders.broadcast",
+};
 const BOT_ORDERS_FORMAT = "bot.%s.orders";
 
 const BOT_PROTOCOL_IN_FORMAT = "bot.%s.protocol.in";
@@ -59,11 +62,7 @@ export default class RabbitMqBoticaClient implements BoticaClient {
     );
 
     await this.enableProtocol();
-    const lifecycleConfiguration =
-      this.botConfiguration.lifecycle || this.typeConfiguration.lifecycle;
-    if (lifecycleConfiguration.type === "reactive") {
-      await this.enableOrders();
-    }
+    await this.enableOrders();
   }
 
   private async enableProtocol(): Promise<void> {
@@ -79,18 +78,28 @@ export default class RabbitMqBoticaClient implements BoticaClient {
   }
 
   private async enableOrders(): Promise<void> {
-    const botOrdersName = format(BOT_ORDERS_FORMAT, this.botConfiguration.id);
-    const botTypeOrdersName = format(
-      BOT_TYPE_ORDERS_FORMAT,
-      this.typeConfiguration.id,
+    const strategies = new Set(
+      this.typeConfiguration.subscribe?.map(
+        // if not present, default is distributed
+        (subscription) => subscription.strategy || "distributed",
+      ),
     );
 
-    await this.rabbitClient!.createQueue(botOrdersName);
-    await this.rabbitClient!.bind(ORDER_EXCHANGE, botOrdersName, botOrdersName);
-    // bot_type orders queue is already created by director
+    for (let strategy of strategies) {
+      const queue = format(
+        BOT_TYPE_ORDERS_FORMATS[strategy],
+        this.typeConfiguration.id,
+      );
+      await this.listenToOrders(queue);
+    }
+    await this.listenToOwnQueue();
+  }
 
-    await this.listenToOrders(botOrdersName);
-    await this.listenToOrders(botTypeOrdersName);
+  private async listenToOwnQueue(): Promise<void> {
+    const queue = format(BOT_ORDERS_FORMAT, this.botConfiguration.id);
+    await this.rabbitClient!.createQueue(queue);
+    await this.rabbitClient!.bind(ORDER_EXCHANGE, queue, queue);
+    await this.listenToOrders(queue);
   }
 
   private async listenToOrders(queue: string): Promise<void> {
@@ -105,9 +114,9 @@ export default class RabbitMqBoticaClient implements BoticaClient {
     this.orderListeners[order]?.forEach((listener) => {
       try {
         listener(order, message);
-      } catch (error) {
+      } catch (e) {
         logger.error(
-          `An exception was risen during the bot action: ${formatError(error)}`,
+          `An error was thrown while consuming an order: ${formatError(e)}`,
         );
       }
     });

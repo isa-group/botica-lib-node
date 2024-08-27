@@ -1,5 +1,5 @@
 import client, { Channel, Connection } from "amqplib";
-import logger from "../logger.js";
+import logger, { formatError } from "../logger.js";
 
 const RETRY_SECONDS = 5;
 const MAX_ATTEMPTS = 7;
@@ -44,9 +44,17 @@ export class RabbitMqClient {
     consumer: (message: string) => void,
   ): Promise<void> {
     const channel = await this.connection.createChannel();
+    await channel.prefetch(10);
     await channel.consume(queue, (msg) => {
-      if (msg !== null) {
+      if (!msg) return;
+      try {
         consumer(msg.content.toString());
+        channel.ack(msg, false);
+      } catch (e) {
+        logger.error(
+          `An error was thrown while consuming an order: ${formatError(e)}`,
+        );
+        channel.reject(msg, false);
       }
     });
   }
