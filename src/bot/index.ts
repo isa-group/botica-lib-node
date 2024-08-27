@@ -79,7 +79,7 @@ export class Bot {
    *
    * @param orderListener the listener to register
    * @param order the order to listen to
-   * @throws Error if the bot lifecycle type is not `reactive`
+   * @throws Error if the bot lifecycle type is not `reactive` and no `order` is provided
    */
   onOrderReceived(orderListener: OrderListener, order?: string): void;
 
@@ -101,15 +101,15 @@ export class Bot {
    *
    * @param orderListener the listener to register
    * @param order the order to listen to
-   * @throws Error if the bot lifecycle type is not `reactive`
+   * @throws Error if the bot lifecycle type is not `reactive` and no `order` is provided
    */
   registerOrderListener(orderListener: OrderListener, order?: string): void;
 
   registerOrderListener(orderListener: OrderListener, order?: string): void {
-    if (this.getLifecycleConfiguration().type !== "reactive") {
-      throw new Error("bot lifecycle type is not reactive");
-    }
     if (!order) {
+      if (this.getLifecycleConfiguration().type !== "reactive") {
+        throw new Error("bot lifecycle type is not reactive");
+      }
       const lifecycleConfiguration =
         this.getLifecycleConfiguration() as ReactiveBotLifecycleConfiguration;
       order = lifecycleConfiguration.order;
