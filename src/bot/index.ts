@@ -10,6 +10,7 @@ import MainConfiguration from "../configuration/MainConfiguration.js";
 import RabbitMqBoticaClient from "../client/RabbitMqBoticaClient.js";
 import fs from "fs";
 import { schedule } from "../util/index.js";
+import { CONTAINER_PREFIX } from "../index.js";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 
@@ -157,6 +158,22 @@ export class Bot {
     }
     if (typeof message !== "string") message = JSON.stringify(message);
     await this.boticaClient.publishOrder(key, order, message);
+  }
+
+  /**
+   * Returns the hostname of this bot's container.
+   */
+  getHostname(): string {
+    return this.getBotHostname(this.botConfiguration.id);
+  }
+
+  /**
+   * Returns the hostname of the given bot's container.
+   *
+   * @param botId the ID of the bot instance
+   */
+  getBotHostname(botId: string): string {
+    return CONTAINER_PREFIX + botId;
   }
 
   /**
