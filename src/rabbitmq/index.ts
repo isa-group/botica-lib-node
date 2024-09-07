@@ -44,7 +44,7 @@ export class RabbitMqClient {
     consumer: (message: string) => void,
   ): Promise<void> {
     const channel = await this.connection.createChannel();
-    await channel.prefetch(10);
+    await channel.prefetch(1);
     await channel.consume(queue, (msg) => {
       if (!msg) return;
       try {
