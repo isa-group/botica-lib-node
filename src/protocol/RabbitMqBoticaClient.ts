@@ -1,13 +1,18 @@
-import BoticaClient, { OrderListener, PacketListener } from "./BoticaClient.js";
-import Packet from "../protocol/Packet.js";
-import * as rabbitmq from "../rabbitmq/index.js";
-import { RabbitMqClient } from "../rabbitmq/index.js";
+import { connect, RabbitMqClient } from "../rabbitmq/index.js";
 import { format } from "node:util";
-import BotTypeConfiguration from "../configuration/bot/BotTypeConfiguration.js";
-import BotInstanceConfiguration from "../configuration/bot/BotInstanceConfiguration.js";
 import logger, { formatError } from "../logger.js";
-import MainConfiguration from "../configuration/MainConfiguration.js";
-import RabbitMqConfiguration from "../configuration/broker/RabbitMqConfiguration.js";
+import {
+  BoticaClient,
+  OrderListener,
+  Packet,
+  PacketListener,
+} from "./index.js";
+import {
+  BotInstanceConfiguration,
+  BotTypeConfiguration,
+  MainConfiguration,
+  RabbitMqConfiguration,
+} from "../configuration/index.js";
 
 const ORDER_EXCHANGE = "botica.order";
 const PROTOCOL_EXCHANGE = "botica.protocol";
@@ -26,7 +31,7 @@ const BOT_PROTOCOL_OUT_FORMAT = "bot.%s.protocol.out";
  *
  * @author Alberto Mimbrero
  */
-export default class RabbitMqBoticaClient implements BoticaClient {
+export class RabbitMqBoticaClient implements BoticaClient {
   private readonly mainConfiguration: MainConfiguration;
   private readonly typeConfiguration: BotTypeConfiguration;
   private readonly botConfiguration: BotInstanceConfiguration;
@@ -55,7 +60,7 @@ export default class RabbitMqBoticaClient implements BoticaClient {
 
     const rabbitConfiguration = this.mainConfiguration
       .broker as RabbitMqConfiguration;
-    this.rabbitClient = await rabbitmq.connect(
+    this.rabbitClient = await connect(
       rabbitConfiguration.username,
       rabbitConfiguration.password,
       "botica-rabbitmq",

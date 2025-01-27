@@ -1,3 +1,3 @@
-export default interface Packet {
+export interface Packet {
   type: string;
 }

@@ -1,4 +1,4 @@
-export default interface BotMountConfiguration {
+export interface BotMountConfiguration {
   source: string;
   target: string;
 }

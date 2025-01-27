@@ -1,6 +1,6 @@
-import BotLifecycleConfiguration from "./BotLifecycleConfiguration.js";
+import { BotLifecycleConfiguration } from "./BotLifecycleConfiguration.js";
 
-export default interface ProactiveBotLifecycleConfiguration
+export interface ProactiveBotLifecycleConfiguration
   extends BotLifecycleConfiguration {
   type: "proactive";
   initialDelay: number;

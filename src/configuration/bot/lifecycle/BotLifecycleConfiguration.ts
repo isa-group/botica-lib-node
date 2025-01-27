@@ -1,3 +1,3 @@
-export default interface BotLifecycleConfiguration {
+export interface BotLifecycleConfiguration {
   type: "proactive" | "reactive";
 }

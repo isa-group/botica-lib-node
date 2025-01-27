@@ -1,3 +1,3 @@
-export default interface BrokerConfiguration {
+export interface BrokerConfiguration {
   type: "rabbitmq";
 }

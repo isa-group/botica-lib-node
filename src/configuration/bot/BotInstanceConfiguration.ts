@@ -1,6 +1,6 @@
-import BotLifecycleConfiguration from "./lifecycle/BotLifecycleConfiguration.js";
+import { BotLifecycleConfiguration } from "./lifecycle/BotLifecycleConfiguration.js";
 
-export default interface BotInstanceConfiguration {
+export interface BotInstanceConfiguration {
   id: string;
   environment?: Array<string>;
   lifecycle?: BotLifecycleConfiguration;

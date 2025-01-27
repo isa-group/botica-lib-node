@@ -1,6 +1,6 @@
-import BotLifecycleConfiguration from "./BotLifecycleConfiguration.js";
+import { BotLifecycleConfiguration } from "./BotLifecycleConfiguration.js";
 
-export default interface ReactiveBotLifecycleConfiguration
+export interface ReactiveBotLifecycleConfiguration
   extends BotLifecycleConfiguration {
   type: "reactive";
   order: string;
