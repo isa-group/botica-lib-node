@@ -1,12 +1,12 @@
-import { loadConfigurationFile } from "../util/configuration/index.js";
 import fs from "fs";
+import { Bot } from "./Bot.js";
 import {
   BotInstanceConfiguration,
   BotTypeConfiguration,
   MainConfiguration,
 } from "../configuration/index.js";
 import { RabbitMqBoticaClient } from "../protocol/index.js";
-import { Bot } from "./Bot.js";
+import { loadConfigurationFile } from "../util/configuration/index.js";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 
@@ -54,3 +54,6 @@ function buildClient(
 }
 
 export { Bot };
+export * from "./shutdown/ShutdownHandler.js";
+export * from "./shutdown/ShutdownRequest.js";
+export * from "./shutdown/ShutdownRequestHook.js";

@@ -1,3 +1,6 @@
+import logger, { formatError } from "../logger.js";
+import { CONTAINER_PREFIX } from "../index.js";
+import { ShutdownHandler } from "./shutdown/ShutdownHandler.js";
 import {
   BotInstanceConfiguration,
   BotLifecycleConfiguration,
@@ -11,8 +14,6 @@ import {
   OrderListener,
   ReadyPacket,
 } from "../protocol/index.js";
-import { CONTAINER_PREFIX } from "../index.js";
-import logger, { formatError } from "../logger.js";
 import { schedule } from "../util/index.js";
 
 /**
@@ -30,6 +31,7 @@ export class Bot {
   private running = false;
 
   private proactiveAction?: () => void;
+  public readonly shutdownHandler: ShutdownHandler;
 
   constructor(
     boticaClient: BoticaClient,
@@ -39,6 +41,7 @@ export class Bot {
     this.boticaClient = boticaClient;
     this.botTypeConfiguration = botTypeConfiguration;
     this.botConfiguration = botConfiguration;
+    this.shutdownHandler = new ShutdownHandler(boticaClient);
   }
 
   /**
@@ -164,7 +167,7 @@ export class Bot {
   /**
    * Returns the hostname of this bot's container.
    */
-  getHostname(): string {
+  get hostname(): string {
     return this.getBotHostname(this.botConfiguration.id);
   }
 
@@ -215,7 +218,7 @@ export class Bot {
       this.scheduleRepeatingTask(lifecycleConfiguration);
     } else {
       setTimeout(async () => {
-        if (this.isRunning()) {
+        if (this.isRunning) {
           this.runProactiveAction();
           await this.stop();
         }
@@ -228,7 +231,7 @@ export class Bot {
   ) {
     const intervalId = schedule(
       () => {
-        if (!this.isRunning()) {
+        if (!this.isRunning) {
           clearInterval(intervalId);
           return;
         }
@@ -252,7 +255,7 @@ export class Bot {
   /**
    * Returns whether the bot is running.
    */
-  isRunning(): boolean {
+  get isRunning(): boolean {
     return this.running;
   }
 

@@ -1,11 +1,20 @@
-import { connect, RabbitMqClient } from "../rabbitmq/index.js";
 import { format } from "node:util";
 import logger, { formatError } from "../logger.js";
+import { CONTAINER_PREFIX } from "../index.js";
 import {
   BoticaClient,
+  BotPacket,
+  deserializePacket,
   OrderListener,
   Packet,
   PacketListener,
+  PacketMap,
+  packetRegistry,
+  PacketType,
+  QueryHandler,
+  QueryListener,
+  RequestPacket,
+  ResponsePacket,
 } from "./index.js";
 import {
   BotInstanceConfiguration,
@@ -13,6 +22,7 @@ import {
   MainConfiguration,
   RabbitMqConfiguration,
 } from "../configuration/index.js";
+import { connect, RabbitMqClient } from "../rabbitmq/index.js";
 
 const ORDER_EXCHANGE = "botica.order";
 const PROTOCOL_EXCHANGE = "botica.protocol";
@@ -21,10 +31,10 @@ const BOT_TYPE_ORDERS_FORMATS = {
   distributed: "bot_type.%s.orders.distributed",
   broadcast: "bot_type.%s.orders.broadcast",
 };
-const BOT_ORDERS_FORMAT = "bot.%s.orders";
 
-const BOT_PROTOCOL_IN_FORMAT = "bot.%s.protocol.in";
-const BOT_PROTOCOL_OUT_FORMAT = "bot.%s.protocol.out";
+const DIRECTOR_PROTOCOL = "director.protocol";
+const BOT_PROTOCOL_IN_FORMAT = "bot.%s.protocol";
+const BOT_ORDERS_FORMAT = "bot.%s.orders";
 
 /**
  * RabbitMQ botica client implementation.
@@ -36,11 +46,12 @@ export class RabbitMqBoticaClient implements BoticaClient {
   private readonly typeConfiguration: BotTypeConfiguration;
   private readonly botConfiguration: BotInstanceConfiguration;
 
+  private readonly queryHandler = new QueryHandler();
   private rabbitClient?: RabbitMqClient;
   private readonly orderListeners: { [order: string]: Array<OrderListener> } =
     {};
   private readonly packetListeners: {
-    [type: string]: Array<PacketListener>;
+    [T in PacketType]: Array<PacketListener<PacketMap[T]>>;
   } = {};
 
   constructor(
@@ -63,24 +74,32 @@ export class RabbitMqBoticaClient implements BoticaClient {
     this.rabbitClient = await connect(
       rabbitConfiguration.username,
       rabbitConfiguration.password,
-      "botica-rabbitmq",
+      `${CONTAINER_PREFIX}rabbitmq`,
     );
 
-    await this.enableProtocol();
+    await this.installProtocol();
     await this.enableOrders();
   }
 
-  private async enableProtocol(): Promise<void> {
+  private async installProtocol(): Promise<void> {
     const protocolIn = format(BOT_PROTOCOL_IN_FORMAT, this.botConfiguration.id);
     await this.rabbitClient!.createQueue(protocolIn);
     await this.rabbitClient!.bind(PROTOCOL_EXCHANGE, protocolIn, protocolIn);
-    await this.rabbitClient!.subscribe(protocolIn, (message) => {
-      const packet = JSON.parse(message);
-      return this.packetListeners[packet.type]?.forEach((listener) =>
-        listener(packet),
-      );
-    });
+    await this.rabbitClient!.subscribe(protocolIn, this.callPacketListeners);
   }
+
+  private callPacketListeners = (rawPacket: string) => {
+    const packet = deserializePacket(rawPacket);
+    this.packetListeners[packet.type]?.forEach((listener) => {
+      try {
+        listener(packet);
+      } catch (e) {
+        logger.error(
+          `An error was thrown while executing a packet listener: ${formatError(e)}`,
+        );
+      }
+    });
+  };
 
   private async enableOrders(): Promise<void> {
     const strategies = new Set(
@@ -152,18 +171,63 @@ export class RabbitMqBoticaClient implements BoticaClient {
     await this.rabbitClient!.publish(ORDER_EXCHANGE, key, contents);
   }
 
-  registerPacketListener(packetType: string, callback: PacketListener): void {
-    (this.packetListeners[packetType] ||= []).push(callback);
+  registerPacketListener<P extends Packet>(
+    packetType: P["type"],
+    callback: PacketListener<P>,
+  ): void {
+    this.ensureResponsePacketListener(packetType);
+    this.packetListeners[packetType].push(callback as PacketListener<Packet>);
+  }
+
+  registerQueryListener<
+    T extends PacketType,
+    RequestPacketT extends PacketMap[T] & RequestPacket<ResponsePacket>,
+    ResponsePacketT extends ResponsePacket,
+  >(
+    packetType: T,
+    callback: QueryListener<RequestPacketT, ResponsePacketT>,
+  ): void {
+    this.ensureResponsePacketListener(packetType);
+    this.registerPacketListener(packetType, async (request: RequestPacketT) => {
+      const response = await callback(request);
+      response.requestId = request.requestId;
+      await this.sendPacket(response);
+    });
+  }
+
+  ensureResponsePacketListener(packetType: PacketType) {
+    const listeners = (this.packetListeners[packetType] ||= []);
+    if (
+      listeners.length > 0 &&
+      packetRegistry[packetType].prototype instanceof ResponsePacket
+    ) {
+      listeners.push((response: ResponsePacket) =>
+        this.queryHandler.acceptResponse(response),
+      );
+    }
   }
 
   async sendPacket(packet: Packet): Promise<void> {
     if (!this.isConnected()) {
       throw new Error("Client is not connected yet!");
     }
-    await this.rabbitClient!.publish(
-      PROTOCOL_EXCHANGE,
-      format(BOT_PROTOCOL_OUT_FORMAT, this.botConfiguration.id),
-      JSON.stringify(packet),
+    const wrapper = new BotPacket(this.botConfiguration.id, packet);
+    const raw = JSON.stringify(wrapper);
+    await this.rabbitClient!.publish(PROTOCOL_EXCHANGE, DIRECTOR_PROTOCOL, raw);
+  }
+
+  async sendQuery<ResponsePacketT extends ResponsePacket>(
+    packet: RequestPacket<ResponsePacketT>,
+    callback: PacketListener<ResponsePacketT>,
+    timeoutCallback: () => void,
+    timeoutMs: number = 3000,
+  ): Promise<void> {
+    this.ensureResponsePacketListener(packet.responsePacketType);
+    this.queryHandler.registerQuery(
+      packet,
+      callback,
+      timeoutCallback,
+      timeoutMs,
     );
   }
 
