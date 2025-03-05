@@ -137,7 +137,7 @@ export class RabbitMqBoticaClient implements BoticaClient {
   private callOrderListeners(order: string, message: string) {
     this.orderListeners[order]?.forEach((listener) => {
       try {
-        listener(order, message);
+        listener(message, order);
       } catch (e) {
         logger.error(
           `An error was thrown while consuming an order: ${formatError(e)}`,
@@ -150,10 +150,7 @@ export class RabbitMqBoticaClient implements BoticaClient {
     return this.rabbitClient != null && this.rabbitClient.isConnected();
   }
 
-  registerOrderListener(
-    order: string,
-    callback: (order: string, message: string) => void,
-  ): void {
+  registerOrderListener(order: string, callback: OrderListener): void {
     logger.debug(`New order listener for ${order}`);
     (this.orderListeners[order] ||= []).push(callback);
   }

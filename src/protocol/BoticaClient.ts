@@ -43,7 +43,7 @@ export interface BoticaClient {
   close(): Promise<void>;
 }
 
-export type OrderListener = (order: string, message: string) => void;
+export type OrderListener = (message: string, order: string) => void;
 
 export type PacketListener<P extends Packet> = (packet: P) => void;
 
