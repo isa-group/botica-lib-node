@@ -97,7 +97,6 @@ export class Bot {
    * configuration file.
    *
    * @param orderListener the listener to register
-   * @throws Error if the bot lifecycle type is not `reactive`
    */
   registerOrderListener(orderListener: OrderListener): void;
 
@@ -106,19 +105,27 @@ export class Bot {
    *
    * @param orderListener the listener to register
    * @param order the order to listen to
-   * @throws Error if the bot lifecycle type is not `reactive` and no `order` is provided
+   * @throws Error if no default order is specified for this bot in the current botica environment
+   * configuration
    */
   registerOrderListener(orderListener: OrderListener, order?: string): void;
 
   registerOrderListener(orderListener: OrderListener, order?: string): void {
     if (!order) {
-      if (this.getLifecycleConfiguration().type !== "reactive") {
-        throw new Error("bot lifecycle type is not reactive");
-      }
       const lifecycleConfiguration =
         this.getLifecycleConfiguration() as ReactiveBotLifecycleConfiguration;
+      if (
+        lifecycleConfiguration?.type != "reactive" ||
+        !lifecycleConfiguration.order
+      ) {
+        throw new Error(
+          "no default order specified for this bot in the environment configuration file",
+        );
+      }
+
       order = lifecycleConfiguration.order;
     }
+
     this.boticaClient.registerOrderListener(order, orderListener);
   }
 
