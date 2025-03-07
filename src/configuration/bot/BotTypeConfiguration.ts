@@ -8,6 +8,6 @@ export interface BotTypeConfiguration {
   mount?: Array<BotMountConfiguration>;
   publish?: { key?: string; order?: string };
   subscribe?: [{ key: string; strategy?: "distributed" | "broadcast" }];
-  lifecycle: BotLifecycleConfiguration;
+  lifecycle?: BotLifecycleConfiguration;
   instances: { [id: string]: BotInstanceConfiguration };
 }

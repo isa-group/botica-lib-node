@@ -281,7 +281,8 @@ export class Bot {
 
   private getLifecycleConfiguration(): BotLifecycleConfiguration {
     return (
-      this.botConfiguration.lifecycle || this.botTypeConfiguration.lifecycle
+      this.botConfiguration.lifecycle ||
+      this.botTypeConfiguration.lifecycle || { type: "reactive" }
     );
   }
 }
