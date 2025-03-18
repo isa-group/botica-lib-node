@@ -30,7 +30,7 @@ export class Bot {
   private boticaClient: BoticaClient;
   private running = false;
 
-  private proactiveAction?: () => void;
+  private proactiveTask?: () => void;
   public readonly shutdownHandler: ShutdownHandler;
 
   constructor(
@@ -45,7 +45,7 @@ export class Bot {
   }
 
   /**
-   * Sets the action for this bot.
+   * Sets the task for this bot.
    *
    * @param action the action to set
    * @throws Error if the bot lifecycle type is not `proactive`
@@ -55,19 +55,21 @@ export class Bot {
   }
 
   /**
-   * Sets the action for this bot.
+   * Sets the task for this bot.
    *
    * @param action the action to set
    * @throws Error if the bot lifecycle type is not `proactive`
    */
   setProactiveAction(action: () => void): void {
     if (this.getLifecycleConfiguration().type !== "proactive") {
-      throw new Error("bot lifecycle type is not proactive");
+      throw new Error(
+        "Cannot register a proactive task because this bot is not configured as proactive",
+      );
     }
     if (this.running) {
       throw new Error("bot is already running");
     }
-    this.proactiveAction = action;
+    this.proactiveTask = task;
   }
 
   /**
@@ -119,7 +121,7 @@ export class Bot {
         !lifecycleConfiguration.order
       ) {
         throw new Error(
-          "no default order specified for this bot in the environment configuration file",
+          "no default order specified for this bot in the infrastructure configuration file",
         );
       }
 
@@ -215,8 +217,10 @@ export class Bot {
   }
 
   private startProactiveScheduler(): void {
-    if (!this.proactiveAction) {
-      throw new Error("undefined action for proactive bot");
+    if (!this.proactiveTask) {
+      throw new Error(
+        "This bot is configured as a proactive bot, but no proactive task has been registered",
+      );
     }
     const lifecycleConfiguration =
       this.getLifecycleConfiguration() as ProactiveBotLifecycleConfiguration;
@@ -226,7 +230,7 @@ export class Bot {
     } else {
       setTimeout(async () => {
         if (this.isRunning) {
-          this.runProactiveAction();
+          this.runProactiveTask();
           await this.stop();
         }
       }, lifecycleConfiguration.initialDelay * 1000);
@@ -242,19 +246,19 @@ export class Bot {
           clearInterval(intervalId);
           return;
         }
-        this.runProactiveAction();
+        this.runProactiveTask();
       },
       lifecycleConfiguration.initialDelay * 1000,
       lifecycleConfiguration.period * 1000,
     );
   }
 
-  private runProactiveAction() {
+  private runProactiveTask() {
     try {
-      this.proactiveAction!();
+      this.proactiveTask!();
     } catch (error) {
       logger.error(
-        `an exception was risen during the bot action: ${formatError(error)}`,
+        `An exception was risen during the bot proactive task: ${formatError(error)}`,
       );
     }
   }
