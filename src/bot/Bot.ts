@@ -47,20 +47,20 @@ export class Bot {
   /**
    * Sets the task for this bot.
    *
-   * @param action the action to set
+   * @param task the task to set
    * @throws Error if the bot lifecycle type is not `proactive`
    */
-  proactive(action: () => void): void {
-    this.setProactiveAction(action);
+  proactive(task: () => void): void {
+    this.setProactiveTask(task);
   }
 
   /**
    * Sets the task for this bot.
    *
-   * @param action the action to set
+   * @param task the task to set
    * @throws Error if the bot lifecycle type is not `proactive`
    */
-  setProactiveAction(action: () => void): void {
+  setProactiveTask(task: () => void): void {
     if (this.getLifecycleConfiguration().type !== "proactive") {
       throw new Error(
         "Cannot register a proactive task because this bot is not configured as proactive",
