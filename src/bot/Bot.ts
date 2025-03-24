@@ -73,46 +73,46 @@ export class Bot {
   }
 
   /**
-   * Registers the given listener for the main order. The order is taken from the main
-   * configuration file.
-   *
-   * @param orderListener the listener to register
-   * @throws Error if the bot lifecycle type is not `reactive`
-   */
-  onOrderReceived(orderListener: OrderListener): void;
-
-  /**
    * Registers the given listener for the provided order.
    *
-   * @param orderListener the listener to register
    * @param order the order to listen to
-   * @throws Error if the bot lifecycle type is not `reactive` and no `order` is provided
+   * @param callback the callback for the order
    */
-  onOrderReceived(orderListener: OrderListener, order?: string): void;
-
-  onOrderReceived(orderListener: OrderListener, order?: string): void {
-    this.registerOrderListener(orderListener, order);
+  on(order: string | undefined, callback: OrderListener): void {
+    this.registerOrderListener(order, callback);
   }
 
   /**
-   * Registers the given listener for the main order. The order is taken from the main
+   * Registers the given listener for the provided order.
+   *
+   * @param order the order to listen to
+   * @param callback the callback for the order
+   */
+  onOrder(order: string | undefined, callback: OrderListener): void {
+    this.registerOrderListener(order, callback);
+  }
+
+  /**
+   * Registers the given listener for the default order. The order is taken from the main
    * configuration file.
    *
-   * @param orderListener the listener to register
+   * @param callback the listener to register
+   * @throws Error if the bot lifecycle type is not `reactive`
    */
-  registerOrderListener(orderListener: OrderListener): void;
+  onDefaultOrder(callback: OrderListener): void {
+    this.onOrder(undefined, callback);
+  }
 
   /**
    * Registers the given listener for the provided order.
    *
-   * @param orderListener the listener to register
    * @param order the order to listen to
-   * @throws Error if no default order is specified for this bot in the current botica environment
-   * configuration
+   * @param callback the callback to register
    */
-  registerOrderListener(orderListener: OrderListener, order?: string): void;
-
-  registerOrderListener(orderListener: OrderListener, order?: string): void {
+  registerOrderListener(
+    order: string | undefined,
+    callback: OrderListener,
+  ): void {
     if (!order) {
       const lifecycleConfiguration =
         this.getLifecycleConfiguration() as ReactiveBotLifecycleConfiguration;
@@ -128,7 +128,17 @@ export class Bot {
       order = lifecycleConfiguration.order;
     }
 
-    this.boticaClient.registerOrderListener(order, orderListener);
+    this.boticaClient.registerOrderListener(order, callback);
+  }
+
+  /**
+   * Registers the given listener for the default order. The order is taken from the main
+   * configuration file.
+   *
+   * @param callback the callback to register
+   */
+  registerDefaultOrderListener(callback: OrderListener): void {
+    this.registerOrderListener(undefined, callback);
   }
 
   /**
