@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "publish": "npm run build && npm run publish"
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
