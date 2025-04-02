@@ -1,7 +1,7 @@
 import winston from "winston";
 
 const logger = winston.createLogger({
-  level: "debug",
+  level: process.env.BOTICA_LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp({
       format: "HH:mm:ss.SSS",
