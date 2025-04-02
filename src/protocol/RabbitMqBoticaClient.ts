@@ -129,8 +129,8 @@ export class RabbitMqBoticaClient implements BoticaClient {
   private async listenToOrders(queue: string): Promise<void> {
     logger.debug(`Listening to ${queue}`);
     await this.rabbitClient!.subscribe(queue, (raw) => {
+      logger.debug(`Incoming message from ${queue}: ${raw}`);
       const message = JSON.parse(raw);
-      logger.debug(`Incoming message from ${queue}: ${message}`);
       this.callOrderListeners(message.order, message.message);
     });
   }
