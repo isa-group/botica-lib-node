@@ -12,13 +12,17 @@ const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 
 export async function botica(): Promise<Bot> {
   const configuration = await loadConfiguration(CONFIG_FILE_PATH);
-  const botType = process.env.BOTICA_BOT_TYPE;
-  const botId = process.env.BOTICA_BOT_ID;
+  const botType = process.env.BOTICA_BOT_TYPE!;
+  const botId = process.env.BOTICA_BOT_ID!;
 
-  const typeConfiguration = configuration.bots[botType!];
-  typeConfiguration.id = botType!;
-  const botConfiguration = typeConfiguration.instances[botId!];
-  botConfiguration.id = botId!;
+  const typeConfiguration = configuration.bots[botType];
+  typeConfiguration.id = botType;
+
+  let botConfiguration: BotInstanceConfiguration = {
+    ...(typeConfiguration.instances?.[botId] || {}), // may be a generic replica
+    ...{ id: botId },
+  };
+
   const boticaClient = buildClient(
     configuration,
     typeConfiguration,
