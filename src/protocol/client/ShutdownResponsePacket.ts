@@ -1,4 +1,4 @@
-import { ResponsePacket } from "../query/ResponsePacket.js";
+import { ResponsePacket } from "@/protocol/query/ResponsePacket.js";
 
 export class ShutdownResponsePacket extends ResponsePacket {
   readonly type = "shutdownResponse";

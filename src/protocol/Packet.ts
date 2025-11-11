@@ -1,4 +1,4 @@
-import { PacketType } from "./index.js";
+import { PacketType } from "@/protocol/index.js";
 
 export abstract class Packet {
   abstract type: PacketType;

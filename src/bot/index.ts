@@ -4,9 +4,9 @@ import {
   BotInstanceConfiguration,
   BotTypeConfiguration,
   MainConfiguration,
-} from "../configuration/index.js";
-import { RabbitMqBoticaClient } from "../protocol/index.js";
-import { loadConfigurationFile } from "../util/configuration/index.js";
+} from "@/index.js";
+import { loadConfigurationFile } from "@/util/configuration/index.js";
+import { RabbitMqBoticaClient } from "@/protocol/index.js";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
 

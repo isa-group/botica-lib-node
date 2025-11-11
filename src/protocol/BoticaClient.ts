@@ -1,6 +1,10 @@
-import { Packet, PacketMap, PacketType } from "./index.js";
-import { RequestPacket } from "./query/RequestPacket.js";
-import { ResponsePacket } from "./query/ResponsePacket.js";
+import {
+  Packet,
+  PacketMap,
+  PacketType,
+  RequestPacket,
+  ResponsePacket,
+} from "@/protocol/index.js";
 
 export interface BoticaClient {
   connect(): Promise<void>;

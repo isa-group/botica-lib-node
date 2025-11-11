@@ -1,5 +1,4 @@
-import { Packet } from "../Packet.js";
-import { ResponsePacket } from "./ResponsePacket.js";
+import { Packet, ResponsePacket } from "@/protocol/index.js";
 
 export abstract class RequestPacket<
   ResponsePacketT extends ResponsePacket,

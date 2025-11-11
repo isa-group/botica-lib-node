@@ -1,5 +1,5 @@
 import { Channel, Connection } from "amqplib";
-import logger, { formatError } from "../logger.js";
+import logger, { formatError } from "@/logger.js";
 
 export class RabbitMqClient {
   private readonly connection: Connection;

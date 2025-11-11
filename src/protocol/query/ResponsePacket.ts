@@ -1,4 +1,4 @@
-import { Packet } from "../index.js";
+import { Packet } from "@/protocol/index.js";
 
 export abstract class ResponsePacket extends Packet {
   protected constructor(public requestId?: string) {

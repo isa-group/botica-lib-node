@@ -1,6 +1,6 @@
-import { RabbitMqClient } from "./RabbitMqClient.js";
 import client from "amqplib";
-import logger from "../logger.js";
+import logger from "@/logger.js";
+import { RabbitMqClient } from "./RabbitMqClient.js";
 
 const RETRY_SECONDS = 5;
 const MAX_ATTEMPTS = 7;

@@ -1,5 +1,5 @@
-import { RequestPacket } from "../query/RequestPacket.js";
-import { ShutdownResponsePacket } from "../client/ShutdownResponsePacket.js";
+import { RequestPacket } from "@/protocol/query/RequestPacket.js";
+import { ShutdownResponsePacket } from "@/protocol/client/ShutdownResponsePacket.js";
 
 export class ShutdownRequestPacket extends RequestPacket<ShutdownResponsePacket> {
   readonly type = "shutdownRequest";

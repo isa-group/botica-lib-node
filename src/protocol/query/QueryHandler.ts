@@ -1,7 +1,9 @@
-import { ResponsePacket } from "./ResponsePacket.js";
-import { RequestPacket } from "./RequestPacket.js";
 import * as crypto from "node:crypto";
-import { PacketListener } from "../BoticaClient.js";
+import {
+  PacketListener,
+  RequestPacket,
+  ResponsePacket,
+} from "@/protocol/index.js";
 
 const REQUEST_ID_LENGTH = 8;
 

@@ -1,6 +1,8 @@
-import { BotMountConfiguration } from "./BotMountConfiguration.js";
-import { BotLifecycleConfiguration } from "./lifecycle/BotLifecycleConfiguration.js";
-import { BotInstanceConfiguration } from "./BotInstanceConfiguration.js";
+import {
+  BotInstanceConfiguration,
+  BotLifecycleConfiguration,
+  BotMountConfiguration,
+} from "@/configuration/index.js";
 
 export interface BotTypeConfiguration {
   id: string;

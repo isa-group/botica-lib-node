@@ -15,14 +15,14 @@ import {
   QueryListener,
   RequestPacket,
   ResponsePacket,
-} from "./index.js";
+} from "@/protocol/index.js";
 import {
   BotInstanceConfiguration,
   BotTypeConfiguration,
   MainConfiguration,
   RabbitMqConfiguration,
-} from "../configuration/index.js";
-import { connect, RabbitMqClient } from "../rabbitmq/index.js";
+} from "@/configuration/index.js";
+import { connect, RabbitMqClient } from "@/rabbitmq/index.js";
 
 const ORDER_EXCHANGE = "botica.order";
 const PROTOCOL_EXCHANGE = "botica.protocol";

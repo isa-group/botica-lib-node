@@ -1,20 +1,19 @@
-import logger, { formatError } from "../logger.js";
-import { CONTAINER_PREFIX } from "../index.js";
-import { ShutdownHandler } from "./shutdown/ShutdownHandler.js";
+import logger, { formatError } from "@/logger.js";
+import { CONTAINER_PREFIX, ShutdownHandler } from "@/index.js";
 import {
   BotInstanceConfiguration,
   BotLifecycleConfiguration,
   BotTypeConfiguration,
   ProactiveBotLifecycleConfiguration,
   ReactiveBotLifecycleConfiguration,
-} from "../configuration/index.js";
+} from "@/configuration/index.js";
 import {
   BoticaClient,
   HeartbeatPacket,
   OrderListener,
   ReadyPacket,
-} from "../protocol/index.js";
 import { schedule } from "../util/index.js";
+} from "@/protocol/index.js";
 
 /**
  * A bot instance in a botica environment.
