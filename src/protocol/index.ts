@@ -23,12 +23,12 @@ export function deserializePacket(raw: string): Packet {
   const parsed = JSON.parse(raw);
 
   if (!parsed.type || typeof parsed.type !== "string") {
-    throw new Error("invalid packet: missing or invalid 'type' property");
+    throw new Error("Invalid packet: missing or invalid 'type' property");
   }
 
   const PacketClass = packetRegistry[parsed.type];
   if (!PacketClass) {
-    throw new Error(`unknown packet type: ${parsed.type}`);
+    throw new Error(`Unknown packet type: ${parsed.type}`);
   }
 
   return Object.assign(new PacketClass(), parsed);
