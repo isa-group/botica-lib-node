@@ -12,174 +12,122 @@ import {
   HeartbeatPacket,
   OrderListener,
   ReadyPacket,
-import { schedule } from "../util/index.js";
 } from "@/protocol/index.js";
 
 /**
- * A bot instance in a botica environment.
- *
- * Starting the bot does not block the execution. Everything is managed asynchronously.
+ * A bot instance in a Botica environment.
  *
  * @author Alberto Mimbrero
  */
 export class Bot {
-  private botTypeConfiguration: BotTypeConfiguration;
-  private botConfiguration: BotInstanceConfiguration;
-
-  private boticaClient: BoticaClient;
   private running = false;
+  private proactiveTask?: () => void | Promise<void>;
+  private proactiveTaskInterval: NodeJS.Timeout | null = null;
 
-  private proactiveTask?: () => void;
   public readonly shutdownHandler: ShutdownHandler;
 
   constructor(
-    boticaClient: BoticaClient,
-    botTypeConfiguration: BotTypeConfiguration,
-    botConfiguration: BotInstanceConfiguration,
+    private readonly boticaClient: BoticaClient,
+    private readonly botTypeConfiguration: BotTypeConfiguration,
+    private readonly botConfiguration: BotInstanceConfiguration,
   ) {
-    this.boticaClient = boticaClient;
-    this.botTypeConfiguration = botTypeConfiguration;
-    this.botConfiguration = botConfiguration;
-    this.shutdownHandler = new ShutdownHandler(boticaClient);
+    this.shutdownHandler = new ShutdownHandler(this.boticaClient);
   }
 
-  /**
-   * Sets the task for this bot.
-   *
-   * @param task the task to set
-   * @throws Error if the bot lifecycle type is not `proactive`
-   */
-  proactive(task: () => void): void {
-    this.setProactiveTask(task);
-  }
+  proactive = this.setProactiveTask;
 
   /**
-   * Sets the task for this bot.
+   * Sets the proactive task for this bot. The task will be executed
+   * periodically based on the bot's configuration.
    *
-   * @param task the task to set
-   * @throws Error if the bot lifecycle type is not `proactive`
+   * @param task The asynchronous or synchronous function to execute.
+   * @throws Error if the bot is not configured as 'proactive'.
    */
-  setProactiveTask(task: () => void): void {
+  setProactiveTask(task: () => void | Promise<void>): void {
     if (this.getLifecycleConfiguration().type !== "proactive") {
       throw new Error(
-        "Cannot register a proactive task because this bot is not configured as proactive",
+        "Cannot register a proactive task because this bot is not configured as proactive.",
       );
     }
     if (this.running) {
-      throw new Error("bot is already running");
+      throw new Error("Cannot set proactive task while the bot is running.");
     }
     this.proactiveTask = task;
   }
 
+  on = this.onOrder;
+  registerOrderListener = this.onOrder;
+
   /**
-   * Registers the given listener for the provided order.
+   * Registers a listener for an order with a specific action.
    *
-   * @param order the order to listen to
-   * @param callback the callback for the order
+   * @param action The action to listen for.
+   * @param listener A callback function that receives the payload.
    */
-  on(order: string | undefined, callback: OrderListener): void {
-    this.registerOrderListener(order, callback);
+  onOrder(action: string, listener: OrderListener): void {
+    this.boticaClient.registerOrderListener(action, listener);
   }
 
-  /**
-   * Registers the given listener for the provided order.
-   *
-   * @param order the order to listen to
-   * @param callback the callback for the order
-   */
-  onOrder(order: string | undefined, callback: OrderListener): void {
-    this.registerOrderListener(order, callback);
-  }
+  registerDefaultOrderListener = this.onDefaultOrder;
 
   /**
-   * Registers the given listener for the default order. The order is taken from the main
-   * configuration file.
+   * Registers a listener for an order with the default action defined in the configuration.
    *
-   * @param callback the listener to register
-   * @throws Error if the bot lifecycle type is not `reactive`
+   * @param listener A callback function that receives the payload.
+   * @throws Error if no default action is specified in the configuration.
    */
-  onDefaultOrder(callback: OrderListener): void {
-    this.onOrder(undefined, callback);
-  }
+  onDefaultOrder(listener: OrderListener): void {
+    const lifecycleConfig =
+      this.getLifecycleConfiguration() as ReactiveBotLifecycleConfiguration;
 
-  /**
-   * Registers the given listener for the provided order.
-   *
-   * @param order the order to listen to
-   * @param callback the callback to register
-   */
-  registerOrderListener(
-    order: string | undefined,
-    callback: OrderListener,
-  ): void {
-    if (!order) {
-      const lifecycleConfiguration =
-        this.getLifecycleConfiguration() as ReactiveBotLifecycleConfiguration;
-      if (
-        lifecycleConfiguration?.type != "reactive" ||
-        !lifecycleConfiguration.order
-      ) {
-        throw new Error(
-          "no default order specified for this bot in the infrastructure configuration file",
-        );
-      }
-
-      order = lifecycleConfiguration.order;
+    if (
+      lifecycleConfig?.type !== "reactive" ||
+      !lifecycleConfig.defaultAction
+    ) {
+      throw new Error(
+        "No default action specified for this bot in the environment file.",
+      );
     }
 
-    this.boticaClient.registerOrderListener(order, callback);
+    this.onOrder(lifecycleConfig.defaultAction, listener);
+  }
+
+  publish = this.publishOrder;
+
+  /**
+   * Publishes an order with the given key and action.
+   *
+   * @param key The key to publish the order with.
+   * @param action The action of the order.
+   * @param payload The payload of the order. If not a string, it will be
+   *   stringified using JSON.stringify().
+   */
+  async publishOrder(key: string, action: string, payload: any): Promise<void> {
+    const serializedPayload =
+      typeof payload === "string" ? payload : JSON.stringify(payload);
+
+    await this.boticaClient.publishOrder(key, action, serializedPayload);
   }
 
   /**
-   * Registers the given listener for the default order. The order is taken from the main
-   * configuration file.
+   * Publishes an order using the default key and action from the configuration.
    *
-   * @param callback the callback to register
+   * @param payload The payload of the order. If not a string, it will be
+   *   stringified using JSON.stringify().
    */
-  registerDefaultOrderListener(callback: OrderListener): void {
-    this.registerOrderListener(undefined, callback);
-  }
-
-  /**
-   * Publishes an order with the given message. The key and order are taken from the main
-   * configuration file.
-   *
-   * @param message the message of the order. If not a `string`, it will be stringified using
-   * `JSON.stringify()`
-   */
-  publishOrder(message: string | any): Promise<void>;
-
-  /**
-   * Publishes an order with the given message to the given key.
-   *
-   * @param message the message of the order. If not a `string`, it will be stringified using
-   * `JSON.stringify()`
-   * @param key the key to publish the order with
-   * @param order the order to publish
-   */
-  publishOrder(
-    message: string | any,
-    key: string,
-    order: string,
-  ): Promise<void>;
-
-  async publishOrder(
-    message: string | any,
-    key?: string,
-    order?: string,
-  ): Promise<void> {
-    if (!key || !order) {
-      const publishConfiguration = this.botTypeConfiguration.publish;
-      if (!isPublishDefined(publishConfiguration)) {
-        throw new Error(
-          "cannot publish order: no publish section present in the bot type configuration.",
-        );
-      }
-      key = publishConfiguration!.key!;
-      order = publishConfiguration!.order!;
+  async publishDefaultOrder(payload: any): Promise<void> {
+    const { publish: publishConfig } = this.botTypeConfiguration;
+    if (
+      !publishConfig?.defaultKey?.trim() ||
+      !publishConfig?.defaultAction?.trim()
+    ) {
+      throw new Error(
+        "Cannot publish order: 'publish.defaultKey' and 'publish.defaultAction' are not defined in the bot type configuration.",
+      );
     }
-    if (typeof message !== "string") message = JSON.stringify(message);
-    await this.boticaClient.publishOrder(key, order, message);
+    const key = publishConfig.defaultKey;
+    const action = publishConfig.defaultAction;
+    return this.publishOrder(key, action, payload);
   }
 
   /**
@@ -199,11 +147,13 @@ export class Bot {
   }
 
   /**
-   * Starts the bot.
-   *
-   * @throws Error if the connection with the message broker cannot be established
+   * Starts the bot and connects to the message broker.
    */
   async start(): Promise<void> {
+    if (this.running) {
+      throw new Error("Bot is already running.");
+    }
+
     logger.info("Establishing connection with the message broker...");
     await this.boticaClient.connect();
     this.running = true;
@@ -228,48 +178,39 @@ export class Bot {
   private startProactiveScheduler(): void {
     if (!this.proactiveTask) {
       throw new Error(
-        "This bot is configured as a proactive bot, but no proactive task has been registered",
+        "This bot is configured as proactive, but no proactive task has been registered via setProactiveTask().",
       );
     }
-    const lifecycleConfiguration =
+    const lifecycleConfig =
       this.getLifecycleConfiguration() as ProactiveBotLifecycleConfiguration;
 
-    if (lifecycleConfiguration.period > 0) {
-      this.scheduleRepeatingTask(lifecycleConfiguration);
-    } else {
-      setTimeout(async () => {
-        if (this.isRunning) {
-          this.runProactiveTask();
-          await this.stop();
-        }
-      }, lifecycleConfiguration.initialDelay * 1000);
-    }
-  }
+    const runTask = async () => {
+      if (!this.running) return;
+      try {
+        await this.proactiveTask!();
+      } catch (error) {
+        logger.error(
+          `An exception was thrown during the bot proactive task: ${formatError(
+            error,
+          )}`,
+        );
+      }
+    };
 
-  private scheduleRepeatingTask(
-    lifecycleConfiguration: ProactiveBotLifecycleConfiguration,
-  ) {
-    const intervalId = schedule(
-      () => {
-        if (!this.isRunning) {
-          clearInterval(intervalId);
-          return;
-        }
-        this.runProactiveTask();
-      },
-      lifecycleConfiguration.initialDelay * 1000,
-      lifecycleConfiguration.period * 1000,
-    );
-  }
+    setTimeout(() => {
+      runTask();
 
-  private runProactiveTask() {
-    try {
-      this.proactiveTask!();
-    } catch (error) {
-      logger.error(
-        `An exception was risen during the bot proactive task: ${formatError(error)}`,
-      );
-    }
+      if (lifecycleConfig.period > 0 && this.running) {
+        this.proactiveTaskInterval = setInterval(
+          runTask,
+          lifecycleConfig.period * 1000,
+        );
+      } else if (this.running) {
+        this.stop().catch((err) =>
+          logger.error(`Error during one-shot task shutdown: ${err}`),
+        );
+      }
+    }, lifecycleConfig.initialDelay * 1000);
   }
 
   /**
@@ -284,30 +225,20 @@ export class Bot {
    */
   async stop(): Promise<void> {
     if (!this.running) {
-      throw new Error("Bot is not running");
+      return;
     }
+    logger.info("Stopping bot...");
+    this.running = false;
+
     logger.info("Closing connection with the message broker...");
     await this.boticaClient.close();
-    this.running = false;
     logger.info("Bot stopped.");
   }
 
   private getLifecycleConfiguration(): BotLifecycleConfiguration {
     return (
-      this.botConfiguration.lifecycle ||
-      this.botTypeConfiguration.lifecycle || { type: "reactive" }
+      this.botConfiguration.lifecycle ??
+      this.botTypeConfiguration.lifecycle ?? { type: "reactive" }
     );
   }
-}
-
-function isPublishDefined(
-  publishConfiguration: { key?: string; order?: string } | undefined,
-) {
-  return (
-    publishConfiguration &&
-    publishConfiguration.key &&
-    publishConfiguration.key.trim() !== "" &&
-    publishConfiguration.order &&
-    publishConfiguration.order.trim() !== ""
-  );
 }

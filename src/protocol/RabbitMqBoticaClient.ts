@@ -129,16 +129,22 @@ export class RabbitMqBoticaClient implements BoticaClient {
   private async listenToOrders(queue: string): Promise<void> {
     logger.debug(`Listening to ${queue}`);
     await this.rabbitClient!.subscribe(queue, (raw) => {
-      logger.debug(`Incoming message from ${queue}: ${raw}`);
-      const message = JSON.parse(raw);
-      this.callOrderListeners(message.order, message.message);
+      logger.debug(`Incoming order from ${queue}: ${raw}`);
+      try {
+        const order = JSON.parse(raw);
+        const { action, payload } = order;
+        this.callOrderListeners(action, payload);
+      } catch (err) {
+        logger.error(`Failed to parse incoming order: ${formatError(err)}`);
+      }
     });
   }
 
-  private callOrderListeners(order: string, message: string) {
-    this.orderListeners[order]?.forEach((listener) => {
+  private callOrderListeners(action: string, payload: any) {
+    if (!action) return;
+    this.orderListeners[action]?.forEach((listener) => {
       try {
-        listener(message, order);
+        listener(payload, action);
       } catch (e) {
         logger.error(
           `An error was thrown while consuming an order: ${formatError(e)}`,
@@ -158,13 +164,13 @@ export class RabbitMqBoticaClient implements BoticaClient {
 
   async publishOrder(
     key: string,
-    order: string,
-    message: string,
+    action: string,
+    payload: string,
   ): Promise<void> {
     if (!this.isConnected()) {
       throw new Error("Client is not connected yet!");
     }
-    const contents = JSON.stringify({ order, message });
+    const contents = JSON.stringify({ action, payload });
     logger.debug(`Publishing order with key ${key}: ${contents}`);
     await this.rabbitClient!.publish(ORDER_EXCHANGE, key, contents);
   }

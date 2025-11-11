@@ -11,9 +11,9 @@ export interface BoticaClient {
 
   isConnected(): boolean;
 
-  registerOrderListener(order: string, callback: OrderListener): void;
+  registerOrderListener(action: string, callback: OrderListener): void;
 
-  publishOrder(key: string, order: string, message: string): Promise<void>;
+  publishOrder(key: string, action: string, payload: string): Promise<void>;
 
   registerPacketListener<P extends Packet>(
     packetType: P["type"],
@@ -47,7 +47,10 @@ export interface BoticaClient {
   close(): Promise<void>;
 }
 
-export type OrderListener = (message: string, order: string) => void;
+export type OrderListener = (
+  payload: any,
+  action: string,
+) => void | Promise<void>;
 
 export type PacketListener<P extends Packet> = (packet: P) => void;
 
