@@ -71,4 +71,5 @@ function buildClient(
 export { Bot };
 export * from "./shutdown/ShutdownHandler.js";
 export * from "./shutdown/ShutdownRequest.js";
+export * from "./shutdown/ShutdownResponse.js";
 export * from "./shutdown/ShutdownRequestHook.js";

@@ -1,4 +1,4 @@
-import { ShutdownRequest } from "./ShutdownRequest.js";
+import { ShutdownRequest, ShutdownResponse } from "@/bot/index.js";
 
 /**
  * Function type for handling shutdown requests from the Botica director.
@@ -7,9 +7,9 @@ import { ShutdownRequest } from "./ShutdownRequest.js";
  * it can respond by requesting extra time until the next shutdown request:
  *
  * ```ts
- * bot.shutdownHandler.registerShutdownRequestHook(request => {
+ * bot.shutdownHandler.registerShutdownRequestHook((req, res) => {
  *   if (this.isRunning()) { // some method to check if the bot is still executing a task
- *     request.cancel(); // this will have no effect if request.isForced
+ *     res.setCanceled(true); // this will have no effect if request.isForced
  *   }
  * });
  * ```
@@ -28,4 +28,5 @@ import { ShutdownRequest } from "./ShutdownRequest.js";
  */
 export type ShutdownRequestHook = (
   request: ShutdownRequest,
+  response: ShutdownResponse,
 ) => void | Promise<void>;
