@@ -230,6 +230,11 @@ export class Bot {
     logger.info("Stopping bot...");
     this.running = false;
 
+    if (this.proactiveTaskInterval) {
+      clearInterval(this.proactiveTaskInterval);
+      this.proactiveTaskInterval = null;
+    }
+
     logger.info("Closing connection with the message broker...");
     await this.boticaClient.close();
     logger.info("Bot stopped.");

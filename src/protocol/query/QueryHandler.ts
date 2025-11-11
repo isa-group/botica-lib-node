@@ -26,7 +26,10 @@ export class QueryHandler {
     packet.requestId = requestId;
 
     this.callbacks[requestId] = callback as (response: ResponsePacket) => void;
-    this.timeouts[requestId] = setTimeout(timeoutCallback, timeoutMs);
+    this.timeouts[requestId] = setTimeout(() => {
+      delete this.callbacks[requestId];
+      timeoutCallback();
+    }, timeoutMs);
   }
 
   acceptResponse(packet: ResponsePacket) {
