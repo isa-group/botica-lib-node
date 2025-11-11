@@ -5,7 +5,7 @@ export abstract class RequestPacket<
 > extends Packet {
   abstract responsePacketType: ResponsePacketT["type"];
 
-  protected constructor(public requestId?: string) {
+  constructor(public requestId?: string) {
     super();
   }
 }

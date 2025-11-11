@@ -1,7 +1,7 @@
 import { Packet } from "@/protocol/index.js";
 
 export abstract class ResponsePacket extends Packet {
-  protected constructor(public requestId?: string) {
+  constructor(public requestId?: string) {
     super();
   }
 }
