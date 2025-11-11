@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "test": "vitest",
     "publish": "npm run build && npm publish"
   },
   "repository": {
@@ -28,7 +29,9 @@
     "@types/node": "^20.14.9",
     "prettier": "^3.3.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "vite": "^7.1.12",
+    "vitest": "^4.0.5"
   },
   "engines": {
     "node": ">=18.0.0"
