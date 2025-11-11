@@ -1,4 +1,3 @@
-import fs from "fs";
 import { Bot } from "./Bot.js";
 import {
   BotInstanceConfiguration,
@@ -9,13 +8,25 @@ import { loadConfigurationFile } from "@/util/configuration/index.js";
 import { RabbitMqBoticaClient } from "@/protocol/index.js";
 
 const CONFIG_FILE_PATH = "/run/secrets/botica-config";
+const NO_BOTICA_ENVIRONMENT_ERROR = new Error(
+  "Not running inside a Botica environment. Are you manually starting this bot? Bots " +
+    "should be started inside a container conveniently created by the botica director!",
+);
 
 export async function botica(): Promise<Bot> {
-  const configuration = await loadConfiguration(CONFIG_FILE_PATH);
-  const botType = process.env.BOTICA_BOT_TYPE!;
-  const botId = process.env.BOTICA_BOT_ID!;
+  const botType = process.env.BOTICA_BOT_TYPE;
+  const botId = process.env.BOTICA_BOT_ID;
 
-  const typeConfiguration = configuration.bots[botType];
+  if (!botType || !botId) {
+    throw NO_BOTICA_ENVIRONMENT_ERROR;
+  }
+
+  const configuration = await loadConfiguration(CONFIG_FILE_PATH);
+
+  const typeConfiguration = configuration.bots[botType!];
+  if (!typeConfiguration) {
+    throw new Error(`Configuration for bot type '${botType}' not found.`);
+  }
   typeConfiguration.id = botType;
 
   let botConfiguration: BotInstanceConfiguration = {
@@ -33,13 +44,13 @@ export async function botica(): Promise<Bot> {
 }
 
 async function loadConfiguration(path: string): Promise<MainConfiguration> {
-  if (!fs.existsSync(path) || !fs.lstatSync(path).isFile()) {
-    throw new Error(
-      "Couldn't find the needed configuration file. Are you manually starting this bot? Bots " +
-        "should be started inside a container conveniently created by the botica director!",
-    );
+  try {
+    return await loadConfigurationFile<MainConfiguration>(path);
+  } catch (e: any) {
+    if (e instanceof Error && e.message.includes("File not found"))
+      throw NO_BOTICA_ENVIRONMENT_ERROR;
+    throw e;
   }
-  return await loadConfigurationFile<MainConfiguration>(CONFIG_FILE_PATH);
 }
 
 function buildClient(

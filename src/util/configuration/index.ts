@@ -15,6 +15,10 @@ export interface Configuration {}
 export async function loadConfigurationFile<T extends Configuration>(
   path: string,
 ): Promise<T> {
+  if (!fs.existsSync(path) || !fs.lstatSync(path).isFile()) {
+    throw new Error("File not found");
+  }
+
   return loadYamlFile<T>(path)
     .catch(() => loadJsonFile<T>(path))
     .catch(() =>
