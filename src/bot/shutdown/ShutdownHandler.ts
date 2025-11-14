@@ -14,14 +14,21 @@ export class ShutdownHandler {
   private readonly shutdownRequestHooks: ShutdownRequestHook[] = [];
 
   constructor(client: BoticaClient) {
-    client.registerQueryListener("shutdownRequest", this.onShutdownRequest);
+    client.registerQueryListener(
+      "shutdownRequest",
+      this.processShutdownRequestPacket,
+    );
   }
+
+  onShutdownRequest = this.registerShutdownRequestHook;
 
   registerShutdownRequestHook(hook: ShutdownRequestHook) {
     this.shutdownRequestHooks.push(hook);
   }
 
-  private onShutdownRequest = async (packet: ShutdownRequestPacket) => {
+  private processShutdownRequestPacket = async (
+    packet: ShutdownRequestPacket,
+  ) => {
     const request = new ShutdownRequest(packet.forced!);
     const response = new ShutdownResponse();
 
