@@ -131,6 +131,22 @@ export class Bot {
   }
 
   /**
+   * Returns the unique ID of this bot instance.
+   * This ID is assigned by the Botica Director and is unique within the environment.
+   */
+  get id(): string {
+    return this.botConfiguration.id;
+  }
+
+  /**
+   * Returns the bot type this instance belongs to.
+   * A bot type groups multiple instances that share the same Docker image and general configuration.
+   */
+  get type(): string {
+    return this.botTypeConfiguration.id;
+  }
+
+  /**
    * Returns the hostname of this bot's container.
    */
   get hostname(): string {
