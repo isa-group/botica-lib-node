@@ -21,7 +21,7 @@ async function main() {
 main().catch(console.error);
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > Botica bots are designed to run exclusively within a Botica environment, not as standalone
 > applications. You cannot simply run your bot's entry point manually. Keep reading to learn how to
 > run your bot in a Botica environment.
@@ -31,7 +31,12 @@ main().catch(console.error);
 Regardless of how you set up your project, the first step is always to compile your bot's code (if
 using TypeScript) and package it into a Docker container image.
 
+<details>
+<summary>
+
 ### Option 1: The easy way (using official templates)
+
+</summary>
 
 **If you started your project with either
 the [botica-seed-node](https://github.com/isa-group/botica-seed-node) (for JavaScript) or
@@ -40,36 +45,16 @@ template**, this process is automated for you.
 
 1. **Customize `package.json`**: Ensure your `package.json` has the correct `imageTag` property (
    e.g., `my-org/my-bot`). This tag identifies your bot's Docker image and must be referenced in
-   your Botica environment configuration file to deploy your bot. Also, verify `main` points to your
-   bot's entry file.
+   your Botica environment configuration file to deploy your bot. Also, verify `main` and the
+   `start` script points to your bot's entry file.
 
-    - Using the **JavaScript** template:
-      ```json
-      {
-        ...
-        "imageTag": "my-org/my-bot",
-        "main": "src/index.js",
-        "scripts": {
-          "start": "node src/index.js"
-        },
-        ...
-      }
-      ```
+   ```json
+   {
+     "imageTag": "my-org/my-bot"
+   }
+   ```
 
-    - Using the **TypeScript** template:
-      ```json
-      {
-        ...
-        "imageTag": "my-org/my-bot",
-        "main": "dist/src/index.js",
-        "scripts": {
-          "start": "node dist/src/index.js"
-        },
-        ...
-      }
-      ```
-
-2. **Run the build script**: Navigate to your project's root directory in a terminal and execute the
+3. **Run the build script**: Navigate to your project's root directory in a terminal and execute the
    provided build script.
 
    #### On Linux or macOS
@@ -87,7 +72,14 @@ template**, this process is automated for you.
    This script automatically (if using the TS template) compiles your TypeScript code to JavaScript,
    and then builds a Docker image tagged as specified in your `package.json`.
 
+</details>
+
+<details>
+<summary>
+
 ### Option 2: For existing Node.js projects (without a template)
+
+</summary>
 
 If you're integrating `botica-lib-node` into an existing Node.js project, you'll need to manually
 create a Dockerfile and ensure your build process generates the necessary files.
@@ -150,6 +142,8 @@ create a Dockerfile and ensure your build process generates the necessary files.
    ```
 
    Ensure `my-org/my-bot` matches the image tag you'll use in your Botica environment configuration.
+
+</details>
 
 ## Step 2: Running the Botica Director
 

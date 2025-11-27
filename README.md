@@ -1,11 +1,11 @@
 # Botica Node.js Library
 
 This library provides the official Node.js (and TypeScript) support for developing bots that run
-inside a Botica environment.
+inside a [Botica](https://github.com/isa-group/botica) environment.
 
 ## Installation
 
-### Using the official template
+### Using the official template (recommended)
 
 If you are starting from scratch, we recommend using one of the official templates to set up your
 project:
@@ -13,19 +13,18 @@ project:
 - [botica-seed-node](https://github.com/isa-group/botica-seed-node): For JavaScript projects.
 - [botica-seed-node-ts](https://github.com/isa-group/botica-seed-node-ts): For TypeScript projects.
 
-These templates contain:
-
-- A Node.js project configured for Botica bots
-- Scripts for building and packaging your bot:
-    - `build.sh` (Linux/macOS)
-    - `build.bat` (Windows)
-- A Dockerfile preconfigured for Botica environments
-- Example bots implemented with the library
-- A `package.json` file exposing the `imageTag` property, used by the build scripts
+These templates contain a Node.js project configured for Botica bots, and scripts for building and
+packaging your bot for both Windows and Linux/macOS, among others.
 
 ### Using npm
 
-Add the library dependency to your `package.json`:
+Install `botica-lib-node` as a dependency by running:
+
+```
+npm install botica-lib-node
+```
+
+Or add it to your `package.json` manually and run `npm install` afterward:
 
 ```json
 {
@@ -37,6 +36,11 @@ Add the library dependency to your `package.json`:
 
 As `botica-lib-node` is built with TypeScript, it includes type definitions for seamless integration
 into TypeScript projects.
+
+> [!TIP]
+> We **really encourage** creating your bot's repository **using the official template**. It
+> contains build scripts that simplify the entire build process of your bot into a single step, from
+> compilation to Docker image creation.
 
 ## Creating your first bot
 
@@ -108,7 +112,7 @@ async function main() {
 main().catch(console.error);
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > Botica bots are designed to run exclusively within a Botica environment, not as standalone
 > applications. You cannot simply run your bot's entry point manually.
 >
@@ -120,41 +124,7 @@ main().catch(console.error);
 For a complete overview of `botica-lib-node` features and detailed guides, please refer to the full
 documentation:
 
-- **[Read full documentation and detailed guides](docs/0-index.md)**
-
-To understand how bots interact inside a Botica environment, including core platform concepts, refer
-to the main Botica documentation:
-
-- **[The concept of a bot](https://github.com/isa-group/botica/blob/main/docs/1-the-concept-of-a-bot.md)**
-- **[Creating process chains](https://github.com/isa-group/botica/blob/main/docs/2-process-chains.md)**
-- **[Messaging between bots](https://github.com/isa-group/botica/blob/main/docs/3-messaging-between-bots.md)**
-- **[Sharing files between bots](https://github.com/isa-group/botica/blob/main/docs/4-sharing-files-between-bots.md)**
-- **[The infrastructure configuration file](https://github.com/isa-group/botica/blob/main/docs/the-infrastructure-configuration-file.md)**
-
-## Example projects
-
-Explore these real-world and demonstrative projects built with `botica-lib-node` to see the concepts in action.
-
-- **[Botica Fishbowl infrastructure](https://github.com/isa-group/botica-infrastructure-fishbowl)**:
-  A simulation of a 9x9 fishbowl where multiple fish bots move around and a manager bot tracks their
-  positions. This project showcases proactive (fish) and reactive (manager) bots written in both
-  Node.js and Java, demonstrating inter-language communication and file system interaction.
-    - **[Node.js Fish Bot](https://github.com/isa-group/botica-bot-fishbowl-fish-node)**: A
-      proactive bot that periodically publishes its position within the fishbowl.
-
-
-- **[Automatic REST API testing system with RESTest](https://github.com/isa-group/botica-infrastructure-restest)**:
-  A real-world application automating REST API testing. Generator bots create test cases, executor
-  bots run them, and reporter bots analyze results, demonstrating distributed processing and complex
-  workflow orchestration using various Node.js bots.
-  - **[RESTest Proxy Bot](https://github.com/isa-group/botica-bot-restest-proxy)**: A specialized
-  bot that acts as an intermediary for all requests coming from executor bots. It opens a server
-  that proxies incoming requests, forwarding them to the actual destination.
-
-
-- **[Botica Telegram Frontend Bot](https://github.com/isa-group/botica-bot-telegram-frontend)**:
-  A Telegram bot frontend that allows other bots to send information, ask for input, or request
-  confirmation from human users via Telegram, demonstrating external service integration.
+### [Read full documentation, detailed guides and example projects](docs/0-index.md)
 
 ## License
 

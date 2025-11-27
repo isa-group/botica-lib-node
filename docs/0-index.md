@@ -38,8 +38,6 @@ to the main Botica documentation:
 
 ## Example Projects
 
-Explore these real-world and demonstrative projects built with `botica-lib-node` to see the concepts in action.
-
 - **[Botica Fishbowl infrastructure](https://github.com/isa-group/botica-infrastructure-fishbowl)**:
   A simulation of a 9x9 fishbowl where multiple fish bots move around and a manager bot tracks their
   positions. This project showcases proactive (fish) and reactive (manager) bots written in both
@@ -47,6 +45,10 @@ Explore these real-world and demonstrative projects built with `botica-lib-node`
     - **[Node.js Fish Bot](https://github.com/isa-group/botica-bot-fishbowl-fish-node)**: A
       proactive bot that periodically publishes its position within the fishbowl.
 
+## Real-world projects
+
+Explore these real-world and demonstrative projects built with `botica-lib-node` to see the
+concepts in action.
 
 - **[Automatic REST API testing system with RESTest](https://github.com/isa-group/botica-infrastructure-restest)**:
   A real-world application automating REST API testing. Generator bots create test cases, executor
