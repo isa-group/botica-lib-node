@@ -1,12 +1,12 @@
-import { Channel, Connection } from "amqplib";
+import { Channel, ChannelModel } from "amqplib";
 import logger, { formatError } from "@/logger.js";
 
 export class RabbitMqClient {
-  private readonly connection: Connection;
+  private readonly connection: ChannelModel;
   private readonly mainChannel: Channel;
   private connected = true;
 
-  constructor(connection: Connection, mainChannel: Channel) {
+  constructor(connection: ChannelModel, mainChannel: Channel) {
     this.connection = connection;
     this.mainChannel = mainChannel;
     this.connection.on("close", () => (this.connected = false));
