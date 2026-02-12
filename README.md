@@ -5,42 +5,43 @@ inside a [Botica](https://github.com/isa-group/botica) environment.
 
 ## Installation
 
-### Using the official template (recommended)
+### With botica-director
 
-If you are starting from scratch, we recommend using one of the official templates to set up your
-project:
+The easiest way to start is by using the `botica-director` CLI to initialize a new bot directly
+inside your Botica project. This sets up the directory structure, Dockerfile, and build
+configuration automatically.
+
+```bash
+# On Linux/macOS
+./botica-director init <typescript/javascript> my-bot-name
+
+# On Windows
+botica-director.cmd init <typescript/javascript> my-bot-name
+```
+
+### Using the official template
+
+If you prefer to maintain your bot in a separate repository, you can use one of the official
+templates to set up your project:
 
 - [botica-seed-node](https://github.com/isa-group/botica-seed-node): For JavaScript projects.
 - [botica-seed-node-ts](https://github.com/isa-group/botica-seed-node-ts): For TypeScript projects.
 
-These templates contain a Node.js project configured for Botica bots, and scripts for building and
-packaging your bot for both Windows and Linux/macOS, among others.
-
 ### Using npm
 
-Install `botica-lib-node` as a dependency by running:
+Add the library dependency to your `package.json`:
 
-```
+```bash
 npm install botica-lib-node
-```
-
-Or add it to your `package.json` manually and run `npm install` afterward:
-
-```json
-{
-  "dependencies": {
-    "botica-lib-node": "~0.6.0"
-  }
-}
 ```
 
 As `botica-lib-node` is built with TypeScript, it includes type definitions for seamless integration
 into TypeScript projects.
 
 > [!TIP]
-> We **really encourage** creating your bot's repository **using the official template**. It
-> contains build scripts that simplify the entire build process of your bot into a single step, from
-> compilation to Docker image creation.
+> We **really encourage** creating your bot's repository **using botica-director or the official
+> template**. They provide the necessary structure and Dockerfile to easily build and run your bot
+> within a Botica environment.
 
 ## Creating your first bot
 
